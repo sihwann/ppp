@@ -12,12 +12,8 @@ interface propTypes {
 }
 
 const IconButton = ({ icon, onPress, item }: propTypes) => {
-    const _onPress = () => {
-        onPress(item.id)
-    }
-
     return (
-        <TouchableOpacity onPress={_onPress}>
+        <TouchableOpacity onPress={onPress}>
             <View>
                 <Icon source={icon} completed={item.completed} />
             </View>

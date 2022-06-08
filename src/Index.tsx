@@ -1,43 +1,30 @@
-import { useState } from "react"
+import { useState, useContext } from "react"
 import { StatusBar, Dimensions, useWindowDimensions } from "react-native"
 import styled from "styled-components/native"
 import AppLoading from "expo-app-loading"
 
 import { themeType } from "../Types"
 import Task from "./components/Task"
+import TodoList from "./store/Context"
+import Storage from "./store/LocalStorage"
 
 export default function App() {
     const [text, setText] = useState("")
     const width = useWindowDimensions().width
     // const width = Dimensions.get("window").width
+    const { list, setList } = useContext(TodoList)
 
-    const addTask = () => {
+    const addItem = () => {
         if (text.length < 1) return
 
-        const ID = Date.now().toString().slice(10)
-        const newTaskObject = {
-            [ID]: { id: ID, text: text + ID, completed: false }
+        const id = Date.now().toString().slice(10)
+        const newItem = {
+            [id]: { id, text, completed: false }
         }
+
         setText("")
-        storeData({ ...tasks, ...newTaskObject })
-    }
-
-    const deleteTask = (id: string) => {
-        const currentTasks: any = Object.assign({}, tasks)
-        delete currentTasks[id]
-        storeData(currentTasks)
-    }
-
-    const toggleTask = (id: string) => {
-        const currentTasks: any = Object.assign({}, tasks)
-        currentTasks[id]["completed"] = !currentTasks[id]["completed"]
-        storeData(currentTasks)
-    }
-
-    const updateTask = item => {
-        const currentTasks = Object.assign({}, tasks)
-        currentTasks[item.id] = item
-        storeData(currentTasks)
+        setList(prev => ({ ...prev, ...newItem }))
+        Storage.setItem({ key: "task", value: { ...list, ...newItem } })
     }
 
     return (
@@ -52,20 +39,14 @@ export default function App() {
                 maxLength={50}
                 value={text}
                 onChangeText={text => setText(text)}
-                onSubmitEditing={addTask}
+                onSubmitEditing={addItem}
                 onBlur={() => setText("")}
             />
             <List width={width}>
-                {Object.values(tasks)
+                {Object.values(items)
                     .reverse()
                     .map(item => (
-                        <Task
-                            key={item.id}
-                            item={item}
-                            deleteTask={deleteTask}
-                            toggleTask={toggleTask}
-                            updateTask={updateTask}
-                        />
+                        <Task key={item.id} item={item} />
                     ))}
             </List>
         </Container>
